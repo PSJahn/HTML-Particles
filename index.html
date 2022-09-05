@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" href="styles.css">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Oswald&display=swap" rel="stylesheet">
+	</head>
+<body style="margin: 0px" onload="setup()">
+
+<div style="position: absolute;" id="interactioncheckbox">
+	<label class="container" style="color:whitesmoke;margin: 8px;">Mouse Interaction
+		<input type="checkbox" checked="checked" id="interaction">
+		<span class="checkmark"></span>
+	</label>
+	<label style="color:whitesmoke;margin: 8px;margin-top: 16px;display: block;">Particle Speed</label>
+	<input id="speed" style="width: 215px; margin-left: 8px;" type="range" min="-1.5" max="3" value="1" step="0.01" class="range"/>
+</div>
+
+<canvas id="canvas">Your browser does not support the HTML canvas tag.</canvas>
+	
+<script>
+	let Stars = [];		
+	var c = document.getElementById("canvas");
+	var ctx = c.getContext("2d");
+
+	addEventListener('resize', (event) => {});
+
+	var mouseX = null;
+	var mouseY = null;
+    
+	c.addEventListener("mousemove", function(e) { 
+    var cRect = canvas.getBoundingClientRect();
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+	});
+
+	onresize = (event) => {c.width=window.innerWidth; c.height=window.innerHeight; };
+	c.width=window.innerWidth; c.height=window.innerHeight;
+
+	function setup()
+	{
+		for (let i = 0; i < 300; i++) {
+  		let star = new Star(random(c.width), random(c.height), (random(500)-250)/100, (random(500)-250)/100)
+    	Stars[i]=star;
+  		}
+		this.interval = setInterval(update, 10);
+	}
+
+	function random(value){return Math.floor(Math.random() * value)}
+
+	function update()
+	{
+		ctx.fillStyle = "black";
+		ctx.fillRect(0, 0, c.width, c.height);
+		for (let i = 0; i < Stars.length; i++) {
+  		Stars[i].update();
+  		}
+	}
+
+	function getDistance(x1, y1, x2, y2){let y = x2 - x1;let x = y2 - y1;return Math.sqrt(x * x + y * y);}
+	
+	class Star
+	{
+		constructor(posX,posY,velX,velY)
+		{
+			this.posX=posX;
+			this.posY=posY;
+			this.velX=velX;
+			this.velY=velY;
+		}
+		
+		update()
+		{
+		let speed = document.getElementById("speed").value
+		this.posX+=this.velX*speed;
+		this.posY+=this.velY*speed;
+		if(this.posX<0||this.posX>c.width)
+		{
+			this.posX=Math.floor(Math.random() * c.width);
+		}
+		if(this.posY<0||this.posY>c.height)
+		{
+			this.posY=Math.floor(Math.random() * c.height);
+		}
+		ctx.fillStyle="white";
+		ctx.beginPath();
+		ctx.arc(this.posX, this.posY, 2, 0, 2 * Math.PI);
+		ctx.fill();
+		for (let i = 0; i < Stars.length; i++)
+		{
+			if(Stars[i].posX==this.posX&&Stars[i].posY==this.posY)
+			{
+				continue;
+			}
+			if(getDistance(this.posX,this.posY, Stars[i].posX, Stars[i].posY)<200)
+				{
+					var number = Math.max(0,255-(getDistance(this.posX,this.posY, Stars[i].posX, Stars[i].posY)+50))*1.5;
+					ctx.strokeStyle=`rgba(${number}, ${number}, ${number}, ${number/255})`;
+					ctx.beginPath();
+					ctx.moveTo(this.posX,this.posY);
+					ctx.lineTo(Stars[i].posX, Stars[i].posY);
+					ctx.stroke();
+				}
+		}
+			if(mouseX!=null&&mouseY!=null&&document.getElementById("interaction").checked)
+			{
+				if(getDistance(this.posX,this.posY, mouseX, mouseY)<255)
+				{
+					var number = Math.max(0,255-(getDistance(this.posX,this.posY, mouseX, mouseY)+50))*2;
+					let before = ctx.lineWidth;
+					ctx.lineWidth*=2;
+					ctx.strokeStyle=`rgba(255, 255, 255, ${number/255})`;
+					ctx.beginPath();
+					ctx.moveTo(this.posX,this.posY);
+					ctx.lineTo(mouseX, mouseY);
+					ctx.stroke();
+					ctx.lineWidth=before;
+				}
+			}
+		}
+		
+		
+	}
+	</script> 
+
+</body>
+</html>
